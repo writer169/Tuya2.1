@@ -1,0 +1,52 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Стили для экрана загрузки */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f9;
+}
+
+.loading {
+  font-size: 1.2rem;
+  color: #555;
+  text-align: center;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .loading {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+}
+
+/* Дополнительные глобальные стили для кнопок */
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: 2px solid rgba(33, 150, 243, 0.4);
+}
