@@ -12,6 +12,7 @@
     "next": "latest",
     "next-auth": "^4.20.0",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "ioredis": "^5.3.1"
   }
 }
