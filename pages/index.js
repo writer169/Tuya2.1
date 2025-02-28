@@ -10,7 +10,7 @@ export default function Home() {
   const { devicesData, loading, error, fetchDevices } = useDevices(true);
 
   return (
-    <Layout title="Tuya">
+    <Layout>
       <div className="container">
         <div className="header-container">
           <button 
