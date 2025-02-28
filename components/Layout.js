@@ -102,9 +102,6 @@ export default function Layout({ children, title = "Tuya Dashboard" }) {
       </header>
       
       <main className="main-content">
-        <div className="page-title-container">
-          <h1>{title}</h1>
-        </div>
         {children}
       </main>
 
