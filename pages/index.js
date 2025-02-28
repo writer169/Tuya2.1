@@ -14,7 +14,7 @@ export default function Home() {
       <div className="container">
         <div className="header-container">
           <button 
-            onClick={fetchDevices} 
+            onClick={() => fetchDevices()} 
             className="refresh-button"
             disabled={loading}
           >
@@ -25,7 +25,7 @@ export default function Home() {
         {error && (
           <div className="error-message">
             <p>{error}</p>
-            <button onClick={fetchDevices} className="refresh-button">
+            <button onClick={() => fetchDevices()} className="refresh-button">
               Повторить попытку
             </button>
           </div>
