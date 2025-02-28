@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Layout({ children, title = "Tuya Dashboard" }) {
+export default function Layout({ children, title = "" }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const loading = status === "loading";
