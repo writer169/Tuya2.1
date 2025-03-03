@@ -1,5 +1,4 @@
 // components/DeviceCard.js
-import { useState, useEffect } from 'react';
 import { DEVICE_TYPES, DEVICE_IDS, PARAM_LABELS } from '../config/constants';
 
 const getDeviceType = (deviceId) => {
@@ -19,6 +18,7 @@ const getDeviceParams = (device) => {
   const { id, status } = device.result;
   const deviceType = getDeviceType(id);
   
+  // Преобразуем статусы в объект для удобства доступа
   const statusMap = status.reduce((acc, item) => {
     acc[item.code] = item.value;
     return acc;
@@ -72,50 +72,12 @@ const getDeviceParams = (device) => {
   return null;
 };
 
-export default function DeviceCard({ device, changedParams, simplified = false }) {
+export default function DeviceCard({ device, simplified = false }) {
   const { result } = device;
   const { id, name, online, icon } = result;
   const deviceType = getDeviceType(id);
   const fullIconUrl = icon ? `https://images.tuyaus.com/${icon}` : null;
   const params = getDeviceParams(device);
-
-  const [animating, setAnimating] = useState({});
-
-  useEffect(() => {
-    if (changedParams && changedParams[id]) {
-      const newAnimating = {};
-
-      Object.keys(changedParams[id]).forEach(code => {
-        newAnimating[code] = true;
-      });
-
-      setAnimating(newAnimating);
-
-      const timer = setTimeout(() => {
-        setAnimating({});
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [changedParams, id]);
-
-  const shouldAnimate = (paramKey) => {
-    if (!changedParams || !changedParams[id]) return false;
-    
-    const codeMap = {
-      'power': 'switch_1',
-      'voltage': 'cur_voltage',
-      'power_consumption': 'cur_power',
-      'timer': 'countdown_1',
-      'temperature': 'va_temperature',
-      'humidity': 'va_humidity',
-      'co2': 'co2_value',
-      'voc': 'voc_value',
-      'ch2o': 'ch2o_value'
-    };
-    
-    return animating[codeMap[paramKey]];
-  };
 
   return (
     <div className={`device-card ${online ? "online" : "offline"} ${deviceType}`}>
@@ -135,10 +97,7 @@ export default function DeviceCard({ device, changedParams, simplified = false }
       {online && params && (
         <div className="device-params">
           {Object.entries(params).map(([key, value]) => (
-            <div 
-              key={key} 
-              className={`param-row ${shouldAnimate(key) ? 'animate-change' : ''}`}
-            >
+            <div key={key} className="param-row">
               <span className="param-name">
                 {PARAM_LABELS[key] || key}
               </span>
@@ -241,15 +200,39 @@ export default function DeviceCard({ device, changedParams, simplified = false }
           color: #888;
           font-style: italic;
         }
-        @keyframes highlight {
-          0% { background-color: rgba(33, 150, 243, 0); }
-          50% { background-color: rgba(33, 150, 243, 0.2); }
-          100% { background-color: rgba(33, 150, 243, 0); }
+        
+        /* Специальные стили для разных типов устройств */
+        .device-card.socket {
+          border-left: 4px solid #2196f3;
         }
-        .animate-change {
-          animation: highlight 2s ease-in-out;
+        .device-card.airSensor {
+          border-left: 4px solid #9c27b0;
+        }
+        
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+          .device-card {
+            padding: 1rem;
+            margin: 0;
+            max-width: 100%;
+            width: 100%;
+          }
+          .device-name {
+            font-size: 1rem;
+          }
+          .status-indicator {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.7rem;
+          }
+          .device-icon {
+            max-width: 60px;
+            max-height: 60px;
+          }
         }
       `}</style>
     </div>
   );
 }
+
+// Экспортируем вспомогательные функции для использования в других местах
+export { getDeviceType, getDeviceParams };
