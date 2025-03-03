@@ -1,20 +1,25 @@
 // pages/index.js
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import Layout from "../components/Layout";
 import DeviceCard from "../components/DeviceCard";
 import useDevices from "../hooks/useDevices";
-import { REFRESH_INTERVAL } from "../config/constants";
 
 export default function Home() {
   const { data: session } = useSession({ required: true });
-  const { devicesData, loading, error, fetchDevices } = useDevices(true);
+  const { devicesData, changedParams, loading, error, fetchDevices } = useDevices(true);
+
+  // Загружаем данные при первом рендере страницы
+  useEffect(() => {
+    fetchDevices();
+  }, []);
 
   return (
     <Layout>
       <div className="container">
         <div className="header-container">
           <button 
-            onClick={() => fetchDevices()} 
+            onClick={fetchDevices} 
             className="refresh-button"
             disabled={loading}
           >
@@ -25,7 +30,7 @@ export default function Home() {
         {error && (
           <div className="error-message">
             <p>{error}</p>
-            <button onClick={() => fetchDevices()} className="refresh-button">
+            <button onClick={fetchDevices} className="refresh-button">
               Повторить попытку
             </button>
           </div>
@@ -36,7 +41,11 @@ export default function Home() {
         ) : (
           <div className="devices-grid">
             {devicesData.map((device, index) => (
-              <DeviceCard key={device.result.id || index} device={device} />
+              <DeviceCard 
+                key={device.result.id || index} 
+                device={device} 
+                changedParams={changedParams}
+              />
             ))}
           </div>
         )}
@@ -94,35 +103,6 @@ export default function Home() {
           border-radius: 4px;
           margin-bottom: 1rem;
           text-align: center;
-        }
-        
-        /* Мобильная адаптация */
-        @media (max-width: 768px) {
-          .container {
-            padding: 0.5rem;
-          }
-          .header-container {
-            margin-bottom: 1rem;
-          }
-          .refresh-button {
-            width: 100%;
-            padding: 0.7rem;
-          }
-          .devices-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-          }
-        }
-        
-        /* Промежуточный размер для планшетов */
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .devices-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-          }
-          .container {
-            padding: 0.75rem;
-          }
         }
       `}</style>
     </Layout>
