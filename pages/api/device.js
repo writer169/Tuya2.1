@@ -1,4 +1,3 @@
-// pages/api/device.js
 import axios from "axios";
 import crypto from "crypto";
 import { getSession } from "next-auth/react";
@@ -8,7 +7,6 @@ const CLIENT_ID = process.env.TUYA_CLIENT_ID;
 const CLIENT_SECRET = process.env.TUYA_CLIENT_SECRET;
 const API_ENDPOINT = "https://openapi.tuyaeu.com";
 
-// Функция для генерации подписи запроса
 function generateSign(method, path, body = "", token = "") {
   const timestamp = Date.now().toString();
   const contentHash = crypto.createHash("sha256").update(body).digest("hex");
@@ -25,7 +23,6 @@ function generateSign(method, path, body = "", token = "") {
   };
 }
 
-// Получение токена с использованием Redis для кеширования
 async function getAccessToken() {
   let token = await redis.get("tuya_token");
   if (token) return token;
@@ -60,7 +57,6 @@ async function getAccessToken() {
   }
 }
 
-// Добавить новую функцию для batch-запросов
 async function fetchDevicesBatch(deviceIds, token) {
   const path = `/v1.0/devices`;
   const params = `?device_ids=${deviceIds.join(",")}`;
@@ -90,7 +86,6 @@ async function fetchDevicesBatch(deviceIds, token) {
   }
 }
 
-// Изменить обработчик для использования batch-запросов
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Метод не поддерживается" });
@@ -143,11 +138,19 @@ export default async function handler(req, res) {
         const deviceIndex = parsedData.findIndex(
           (device) => device.result && device.result.id === requestedDeviceId
         );
+
         if (deviceIndex >= 0) {
-          parsedData[deviceIndex] = data.find(d => d.id === requestedDeviceId);
+          const updatedDevice = data.find(d => d.result && d.result.id === requestedDeviceId);
+          if (updatedDevice) {
+            parsedData[deviceIndex] = updatedDevice;
+          }
         } else {
-          parsedData.push(data.find(d => d.id === requestedDeviceId));
+          const newDevice = data.find(d => d.result && d.result.id === requestedDeviceId);
+          if (newDevice) {
+            parsedData.push(newDevice);
+          }
         }
+
         await redis.set("tuya_devices", JSON.stringify(parsedData), "EX", 60);
       }
     }
