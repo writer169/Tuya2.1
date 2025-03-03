@@ -36,7 +36,7 @@ export default function Home() {
           <div className="devices-grid">
             {Array.isArray(devicesData) && devicesData.map((device, index) => (
               <DeviceCard 
-                key={device.result?.id || index} 
+                key={device?.result?.id || index} 
                 device={device} 
                 changedParams={changedParams}
               />
