@@ -6,7 +6,7 @@ export default function useDevices(initialLoad = true) {
   const [devicesData, setDevicesData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [changedParams, setChangedParams] = useState({}); // Добавлено состояние
+  const [changedParams, setChangedParams] = useState({});
 
   const fetchDevices = useCallback(async (deviceId = null) => {
     try {
@@ -22,12 +22,16 @@ export default function useDevices(initialLoad = true) {
       }
       
       const data = await res.json();
-      
+      console.log("Fetched data:", data);
+
       if (data.error) {
         throw new Error(data.error);
       }
-      
-      setDevicesData(data);
+
+      // Проверяем, является ли data массивом, если нет — пытаемся извлечь массив из data.devices
+      const devicesArray = Array.isArray(data) ? data : (Array.isArray(data.devices) ? data.devices : []);
+
+      setDevicesData(devicesArray);
       setError(null);
     } catch (error) {
       console.error("Error fetching devices:", error);
@@ -49,7 +53,7 @@ export default function useDevices(initialLoad = true) {
     error,
     fetchDevices,
     setDevicesData,
-    changedParams, // Добавлено в возвращаемый объект
-    setChangedParams // Добавлен сеттер
+    changedParams,
+    setChangedParams
   };
 }
