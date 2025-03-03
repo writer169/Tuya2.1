@@ -2,11 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { API_PATHS } from '../config/constants';
 
-export default function useDevices(initialLoad = true) {
+export default function useDevices(initialLoad = true, interval = null) {
   const [devicesData, setDevicesData] = useState([]);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [changedParams, setChangedParams] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const fetchDevices = useCallback(async (deviceId = null) => {
     try {
@@ -22,16 +21,12 @@ export default function useDevices(initialLoad = true) {
       }
       
       const data = await res.json();
-      console.log("Fetched data:", data);
-
+      
       if (data.error) {
         throw new Error(data.error);
       }
-
-      // Проверяем, является ли data массивом, если нет — пытаемся извлечь массив из data.devices
-      const devicesArray = Array.isArray(data) ? data : (Array.isArray(data.devices) ? data.devices : []);
-
-      setDevicesData(devicesArray);
+      
+      setDevicesData(data);
       setError(null);
     } catch (error) {
       console.error("Error fetching devices:", error);
@@ -45,15 +40,26 @@ export default function useDevices(initialLoad = true) {
     if (initialLoad) {
       fetchDevices();
     }
-  }, [fetchDevices, initialLoad]);
+
+    // Если указан интервал, настраиваем автообновление
+    let intervalId;
+    if (interval) {
+      intervalId = setInterval(fetchDevices, interval);
+    }
+
+    // Очистка интервала при размонтировании
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [fetchDevices, initialLoad, interval]);
 
   return {
     devicesData,
     loading,
     error,
     fetchDevices,
-    setDevicesData,
-    changedParams,
-    setChangedParams
+    setDevicesData
   };
 }
