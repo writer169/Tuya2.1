@@ -6,6 +6,7 @@ export default function useDevices(initialLoad = true) {
   const [devicesData, setDevicesData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [changedParams, setChangedParams] = useState({}); // Добавлено состояние
 
   const fetchDevices = useCallback(async (deviceId = null) => {
     try {
@@ -47,6 +48,8 @@ export default function useDevices(initialLoad = true) {
     loading,
     error,
     fetchDevices,
-    setDevicesData
+    setDevicesData,
+    changedParams, // Добавлено в возвращаемый объект
+    setChangedParams // Добавлен сеттер
   };
 }
