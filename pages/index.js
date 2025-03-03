@@ -30,13 +30,13 @@ export default function Home() {
           </div>
         )}
         
-        {loading && !devicesData.length ? (
+        {loading && (!Array.isArray(devicesData) || devicesData.length === 0) ? (
           <div className="loading">Загрузка данных...</div>
         ) : (
           <div className="devices-grid">
-            {devicesData.map((device, index) => (
+            {Array.isArray(devicesData) && devicesData.map((device, index) => (
               <DeviceCard 
-                key={device.result.id || index} 
+                key={device.result?.id || index} 
                 device={device} 
                 changedParams={changedParams}
               />
