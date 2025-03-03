@@ -1,6 +1,5 @@
 // pages/index.js
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
 import Layout from "../components/Layout";
 import DeviceCard from "../components/DeviceCard";
 import useDevices from "../hooks/useDevices";
@@ -8,11 +7,6 @@ import useDevices from "../hooks/useDevices";
 export default function Home() {
   const { data: session } = useSession({ required: true });
   const { devicesData, changedParams, loading, error, fetchDevices } = useDevices(true);
-
-  // Загружаем данные при первом рендере страницы
-  useEffect(() => {
-    fetchDevices();
-  }, []);
 
   return (
     <Layout>
