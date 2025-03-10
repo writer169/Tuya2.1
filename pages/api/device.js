@@ -6,7 +6,7 @@ import redis from "../../lib/redis";
 
 const CLIENT_ID = process.env.TUYA_CLIENT_ID;
 const CLIENT_SECRET = process.env.TUYA_CLIENT_SECRET;
-const API_ENDPOINT = "https://openapi.tuyaeu.com";
+const API_ENDPOINT = "https://openapi.tuyain.com";
 
 // Функция для генерации подписи запроса
 function generateSign(method, path, body = "", token = "") {
