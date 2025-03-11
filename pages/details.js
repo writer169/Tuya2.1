@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Layout from "../components/Layout";
 
+const PRIORITY_DEVICE_ID = "bf496ddae64215bd93p0qr";
+
 function formatValue(key, value) {
   if (["create_time", "update_time", "active_time"].includes(key)) {
     return new Date(value * 1000).toLocaleString("ru-RU");
@@ -22,7 +24,15 @@ export default function Details() {
     async function fetchDevices() {
       try {
         const res = await fetch("/api/device");
-        const data = await res.json();
+        let data = await res.json();
+        
+        // Сортируем устройства так, чтобы приоритетное устройство было первым
+        data = data.sort((a, b) => {
+          if (a.result?.id === PRIORITY_DEVICE_ID) return -1;
+          if (b.result?.id === PRIORITY_DEVICE_ID) return 1;
+          return 0;
+        });
+        
         setDevicesData(data);
       } catch (error) {
         setError(error.message);
@@ -227,4 +237,4 @@ export default function Details() {
       </div>
     </Layout>
   );
-                      }
+}
