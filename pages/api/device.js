@@ -7,6 +7,7 @@ import redis from "../../lib/redis";
 const CLIENT_ID = process.env.TUYA_CLIENT_ID;
 const CLIENT_SECRET = process.env.TUYA_CLIENT_SECRET;
 const API_ENDPOINT = "https://openapi.tuyaeu.com";
+const PRIORITY_DEVICE_ID = "bf496ddae64215bd93p0qr";
 
 // Функция для генерации подписи запроса
 function generateSign(method, path, body = "", token = "") {
@@ -126,6 +127,17 @@ export default async function handler(req, res) {
       const cachedData = await redis.get("tuya_devices");
       if (cachedData) {
         const parsedData = JSON.parse(cachedData);
+        
+        // Сортировка устройств в кэше, чтобы приоритетное устройство было первым
+        if (!requestedDeviceId) {
+          const sortedData = [...parsedData].sort((a, b) => {
+            if (a.result?.id === PRIORITY_DEVICE_ID) return -1;
+            if (b.result?.id === PRIORITY_DEVICE_ID) return 1;
+            return 0;
+          });
+          return res.status(200).json(sortedData);
+        }
+        
         if (requestedDeviceId) {
           const cachedDevice = parsedData.find(
             (device) => device.result && device.result.id === requestedDeviceId
@@ -133,8 +145,6 @@ export default async function handler(req, res) {
           if (cachedDevice) {
             return res.status(200).json([cachedDevice]);
           }
-        } else {
-          return res.status(200).json(parsedData);
         }
       }
     }
@@ -142,10 +152,21 @@ export default async function handler(req, res) {
     // Получаем актуальный токен доступа
     const token = await getAccessToken();
 
-    // Запрашиваем данные для нужных устройств
-    const data = await Promise.all(
-      devicesToQuery.map((deviceId) => fetchDeviceData(deviceId, token))
+    // Приоритезация запросов: сначала запрашиваем приоритетное устройство, если оно в списке
+    let prioritizedDevicesToQuery = [...devicesToQuery];
+    if (!requestedDeviceId && prioritizedDevicesToQuery.includes(PRIORITY_DEVICE_ID)) {
+      prioritizedDevicesToQuery = [
+        PRIORITY_DEVICE_ID,
+        ...prioritizedDevicesToQuery.filter(id => id !== PRIORITY_DEVICE_ID)
+      ];
+    }
+
+    // Запрашиваем данные для нужных устройств в заданном порядке
+    const devicePromises = prioritizedDevicesToQuery.map(deviceId => 
+      fetchDeviceData(deviceId, token)
     );
+    
+    const data = await Promise.all(devicePromises);
 
     // Если запрашиваются все устройства, обновляем кэш в Redis на 60 секунд
     if (!requestedDeviceId) {
