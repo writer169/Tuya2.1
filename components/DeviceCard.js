@@ -6,6 +6,8 @@ const getDeviceType = (deviceId) => {
     return DEVICE_TYPES.SOCKET;
   } else if (deviceId === DEVICE_IDS.AIR_SENSOR) {
     return DEVICE_TYPES.AIR_SENSOR;
+  } else if (DEVICE_IDS.THERMOMETERS.includes(deviceId)) {
+    return DEVICE_TYPES.THERMOMETER;
   }
   return DEVICE_TYPES.UNKNOWN;
 };
@@ -18,7 +20,6 @@ const getDeviceParams = (device) => {
   const { id, status } = device.result;
   const deviceType = getDeviceType(id);
   
-  // Преобразуем статусы в объект для удобства доступа
   const statusMap = status.reduce((acc, item) => {
     acc[item.code] = item.value;
     return acc;
@@ -68,7 +69,24 @@ const getDeviceParams = (device) => {
     
     return params;
   }
-  
+  else if (deviceType === DEVICE_TYPES.THERMOMETER) {
+    const params = {};
+
+    if (statusMap.va_temperature != null) {
+      params.temperature = `${(statusMap.va_temperature / 10).toFixed(1)}°C`;
+    }
+
+    if (statusMap.va_humidity != null) {
+      params.humidity = `${Math.round(statusMap.va_humidity)}%`;
+    }
+
+    if (statusMap.battery_percentage != null) {
+      params.battery = `${statusMap.battery_percentage}%`;
+    }
+
+    return params;
+  }
+
   return null;
 };
 
@@ -200,16 +218,15 @@ export default function DeviceCard({ device, simplified = false }) {
           color: #888;
           font-style: italic;
         }
-        
-        /* Специальные стили для разных типов устройств */
         .device-card.socket {
           border-left: 4px solid #2196f3;
         }
         .device-card.airSensor {
           border-left: 4px solid #9c27b0;
         }
-        
-        /* Мобильная адаптация */
+        .device-card.thermometer {
+          border-left: 4px solid #ff9800;
+        }
         @media (max-width: 768px) {
           .device-card {
             padding: 1rem;
@@ -234,5 +251,4 @@ export default function DeviceCard({ device, simplified = false }) {
   );
 }
 
-// Экспортируем вспомогательные функции для использования в других местах
 export { getDeviceType, getDeviceParams };
