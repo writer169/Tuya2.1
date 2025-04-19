@@ -100,18 +100,15 @@ export default function DeviceCard({ device, simplified = false }) {
   return (
     <div className={`device-card ${online ? "online" : "offline"} ${deviceType}`}>
       <div className="device-header">
+        {fullIconUrl && (
+          <img src={fullIconUrl} alt={name} className="device-icon small" />
+        )}
         <h2 className="device-name">{name}</h2>
         <div className={`status-indicator ${online ? "online" : "offline"}`}>
           {online ? "В сети" : "Не в сети"}
         </div>
       </div>
-      
-      {fullIconUrl && (
-        <div className="device-icon-wrapper">
-          <img src={fullIconUrl} alt={name} className="device-icon" />
-        </div>
-      )}
-      
+
       {online && params && (
         <div className="device-params">
           {Object.entries(params).map(([key, value]) => (
@@ -151,21 +148,23 @@ export default function DeviceCard({ device, simplified = false }) {
         }
         .device-header {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
           margin-bottom: 1rem;
-          width: 100%;
         }
         .device-name {
           font-size: 1.2rem;
           margin: 0;
           color: #333;
+          flex-grow: 1;
         }
         .status-indicator {
           padding: 0.3rem 0.6rem;
           border-radius: 4px;
           font-size: 0.8rem;
           font-weight: bold;
+          white-space: nowrap;
         }
         .status-indicator.online {
           background-color: #4caf50;
@@ -175,14 +174,11 @@ export default function DeviceCard({ device, simplified = false }) {
           background-color: #f44336;
           color: white;
         }
-        .device-icon-wrapper {
-          text-align: center;
-          margin-bottom: 1rem;
-        }
-        .device-icon {
-          max-width: 80px;
-          max-height: 80px;
+        .device-icon.small {
+          width: 40px;
+          height: 40px;
           border-radius: 8px;
+          object-fit: cover;
         }
         .device-params {
           margin-top: 1rem;
@@ -241,9 +237,9 @@ export default function DeviceCard({ device, simplified = false }) {
             padding: 0.2rem 0.4rem;
             font-size: 0.7rem;
           }
-          .device-icon {
-            max-width: 60px;
-            max-height: 60px;
+          .device-icon.small {
+            width: 30px;
+            height: 30px;
           }
         }
       `}</style>
