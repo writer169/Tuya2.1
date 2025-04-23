@@ -8,8 +8,34 @@ const getDeviceType = (deviceId) => {
     return DEVICE_TYPES.AIR_SENSOR;
   } else if (DEVICE_IDS.THERMOMETERS.includes(deviceId)) {
     return DEVICE_TYPES.THERMOMETER;
+  } else if (deviceId === DEVICE_IDS.POWER_METER) {
+    return DEVICE_TYPES.POWER_METER;
   }
   return DEVICE_TYPES.UNKNOWN;
+};
+
+const decodePhaseA = (base64Value) => {
+  try {
+    // Преобразуем Base64 в бинарные данные
+    const binaryString = atob(base64Value);
+    // Преобразуем бинарную строку в массив шестнадцатеричных значений
+    const hexArray = Array.from(binaryString).map(char => 
+      char.charCodeAt(0).toString(16).padStart(2, '0')
+    );
+    
+    // Извлекаем напряжение из первых 2 байтов
+    const voltageHex = hexArray.slice(0, 2).join('');
+    const voltage = parseInt(voltageHex, 16) / 10;
+    
+    // Извлекаем мощность из последних 3 байтов
+    const powerHex = hexArray.slice(-3).join('');
+    const power = parseInt(powerHex, 16);
+    
+    return { voltage, power };
+  } catch (error) {
+    console.error("Ошибка декодирования phase_a:", error);
+    return { voltage: 0, power: 0 };
+  }
 };
 
 const getDeviceParams = (device) => {
@@ -84,6 +110,29 @@ const getDeviceParams = (device) => {
       params.battery = `${statusMap.battery_percentage}%`;
     }
 
+    return params;
+  }
+  else if (deviceType === DEVICE_TYPES.POWER_METER) {
+    const params = {};
+    
+    // Обработка данных о потреблении энергии
+    if (statusMap.total_forward_energy) {
+      params.total_energy = `${(statusMap.total_forward_energy / 100).toFixed(2)} кВт·ч`;
+    }
+    
+    // Обработка данных phase_a если они доступны
+    if (statusMap.phase_a) {
+      const decoded = decodePhaseA(statusMap.phase_a);
+      
+      if (decoded.voltage > 0) {
+        params.voltage = `${decoded.voltage.toFixed(1)} В`;
+      }
+      
+      if (decoded.power > 0) {
+        params.current_power = `${decoded.power} Вт`;
+      }
+    }
+    
     return params;
   }
 
@@ -222,6 +271,9 @@ export default function DeviceCard({ device, simplified = false }) {
         }
         .device-card.thermometer {
           border-left: 4px solid #ff9800;
+        }
+        .device-card.powerMeter {
+          border-left: 4px solid #4caf50;
         }
         @media (max-width: 768px) {
           .device-card {
